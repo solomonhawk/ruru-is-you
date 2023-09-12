@@ -19,7 +19,7 @@ const SCREEN_WIDTH: i32 = 320;
 const SCREEN_HEIGHT: i32 = 180;
 
 #[derive(Component)]
-struct MovementController;
+struct Player;
 
 #[derive(Component)]
 struct Collider;
@@ -47,14 +47,12 @@ fn main() {
                 }),
             PixelCameraPlugin,
         ))
+        .add_event::<CollisionEvent>()
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(FixedTime::new_from_secs(FRAME_TIME))
         .add_systems(Startup, setup)
-        .add_systems(Update, bevy::window::close_on_esc)
-        .add_systems(
-            FixedUpdate,
-            (movement_system, collision_system.after(movement_system)),
-        )
+        .add_systems(Update, (movement_system, bevy::window::close_on_esc))
+        .add_systems(FixedUpdate, collision_system)
         .run();
 }
 
@@ -73,11 +71,20 @@ fn setup(
 
     commands.spawn((
         SpriteBundle {
+            texture: asset_server.load("player.png"),
+            transform: Transform::from_xyz(0., -1. * GRID_SIZE, 0.),
+            ..default()
+        },
+        Player,
+        Collider,
+    ));
+
+    commands.spawn((
+        SpriteBundle {
             texture: asset_server.load("subjects/ruru.png"),
             transform: Transform::from_xyz(0., 0., 0.),
             ..default()
         },
-        MovementController,
         Collider,
     ));
 
@@ -91,10 +98,7 @@ fn setup(
     ));
 }
 
-fn movement_system(
-    keys: Res<Input<KeyCode>>,
-    mut player: Query<&mut Transform, With<MovementController>>,
-) {
+fn movement_system(keys: Res<Input<KeyCode>>, mut player: Query<&mut Transform, With<Player>>) {
     let mut p = player.single_mut();
 
     if keys.just_pressed(KeyCode::Left) {
