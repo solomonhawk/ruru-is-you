@@ -40,8 +40,8 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(FixedTime::new_from_secs(DELTA_TIME))
         .add_systems(Startup, setup)
-        .add_systems(Update, (bevy::window::close_on_esc))
-        .add_systems(FixedUpdate, (movement_system))
+        .add_systems(Update, bevy::window::close_on_esc)
+        .add_systems(FixedUpdate, movement_system)
         .run();
 }
 
