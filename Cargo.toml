@@ -10,6 +10,7 @@ edition = "2021"
 # XXX: this should not be enabled for a final release
 # https://bevyengine.org/learn/book/getting-started/setup/#enable-fast-compiles-optional
 bevy = { version = "0.11.2", features = ["dynamic_linking"] }
+bevy-inspector-egui = "0.19.0"
 bevy_pixel_camera = "0.5.1"
 
 # Enable a small amount of optimization in debug mode
