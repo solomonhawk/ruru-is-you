@@ -1,31 +1,32 @@
 use std::time::Duration;
 
-use bevy::asset::ChangeWatcher;
 use bevy::prelude::*;
+use bevy::render::render_resource::AddressMode;
+use bevy::render::texture::CompressedImageFormats;
+use bevy::render::texture::ImageSampler;
+use bevy::render::texture::ImageType;
+use bevy::sprite::Anchor;
+use bevy::sprite::MaterialMesh2dBundle;
+use bevy::window::WindowResolution;
+use bevy::{asset::ChangeWatcher, render::render_resource::SamplerDescriptor};
 
-const DELTA_TIME: f32 = 1.0 / 24.0;
+use bevy_pixel_camera::{PixelCameraBundle, PixelCameraPlugin};
+
+const FRAME_TIME: f32 = 1.0 / 120.0;
 const GRID_SIZE: f32 = 16.0;
-const SCALE_FACTOR: f32 = 3.0;
+
+const SCREEN_WIDTH: i32 = 320;
+const SCREEN_HEIGHT: i32 = 180;
 
 #[derive(Component)]
 struct MovementController;
 
-fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
-
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("subjects/ruru.png"),
-            transform: Transform::from_xyz(0., 0., 0.).with_scale(Vec3::splat(SCALE_FACTOR)),
-            ..default()
-        },
-        MovementController,
-    ));
-}
+#[derive(Component)]
+struct Collider;
 
 fn main() {
     App::new()
-        .add_plugins(
+        .add_plugins((
             DefaultPlugins
                 .set(
                     // prevent low res texture blurring
@@ -35,14 +36,59 @@ fn main() {
                     // Tell the asset server to watch for asset changes on disk:
                     watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
                     ..default()
+                })
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        mode: bevy::window::WindowMode::Windowed,
+                        position: WindowPosition::Centered(MonitorSelection::Primary),
+                        ..default()
+                    }),
+                    ..default()
                 }),
-        )
+            PixelCameraPlugin,
+        ))
         .insert_resource(ClearColor(Color::BLACK))
-        .insert_resource(FixedTime::new_from_secs(DELTA_TIME))
+        .insert_resource(FixedTime::new_from_secs(FRAME_TIME))
         .add_systems(Startup, setup)
         .add_systems(Update, bevy::window::close_on_esc)
-        .add_systems(FixedUpdate, movement_system)
+        .add_systems(
+            FixedUpdate,
+            (movement_system, collision_system.after(movement_system)),
+        )
         .run();
+}
+
+fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut images: ResMut<Assets<Image>>,
+    asset_server: ResMut<AssetServer>,
+) {
+    commands.spawn(PixelCameraBundle::from_resolution(
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
+        true,
+    ));
+
+    commands.spawn((
+        SpriteBundle {
+            texture: asset_server.load("subjects/ruru.png"),
+            transform: Transform::from_xyz(0., 0., 0.),
+            ..default()
+        },
+        MovementController,
+        Collider,
+    ));
+
+    commands.spawn((
+        SpriteBundle {
+            texture: asset_server.load("objects/you.png"),
+            transform: Transform::from_xyz(-1. * GRID_SIZE, 0., 0.),
+            ..default()
+        },
+        Collider,
+    ));
 }
 
 fn movement_system(
@@ -50,18 +96,19 @@ fn movement_system(
     mut player: Query<&mut Transform, With<MovementController>>,
 ) {
     let mut p = player.single_mut();
-    let dist = SCALE_FACTOR * GRID_SIZE;
 
-    if keys.pressed(KeyCode::Left) {
-        p.translation.x -= dist;
+    if keys.just_pressed(KeyCode::Left) {
+        p.translation.x -= GRID_SIZE;
     }
-    if keys.pressed(KeyCode::Right) {
-        p.translation.x += dist;
+    if keys.just_pressed(KeyCode::Right) {
+        p.translation.x += GRID_SIZE;
     }
-    if keys.pressed(KeyCode::Up) {
-        p.translation.y += dist;
+    if keys.just_pressed(KeyCode::Up) {
+        p.translation.y += GRID_SIZE;
     }
-    if keys.pressed(KeyCode::Down) {
-        p.translation.y -= dist;
+    if keys.just_pressed(KeyCode::Down) {
+        p.translation.y -= GRID_SIZE;
     }
 }
+
+fn collision_system(query: Query<&Collider>) {}
