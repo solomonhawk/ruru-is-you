@@ -66,18 +66,15 @@ pub fn movement_system(
             transform.translation.x -= config.grid_size;
             transform.rotation = *Q_LEFT;
             dir.0 = FacingDirection::Left;
-        }
-        if keys.pressed(KeyCode::Right) {
+        } else if keys.pressed(KeyCode::Right) {
             transform.translation.x += config.grid_size;
             transform.rotation = *Q_RIGHT;
             dir.0 = FacingDirection::Right;
-        }
-        if keys.pressed(KeyCode::Up) {
+        } else if keys.pressed(KeyCode::Up) {
             transform.translation.y += config.grid_size;
             transform.rotation = *Q_UP;
             dir.0 = FacingDirection::Up;
-        }
-        if keys.pressed(KeyCode::Down) {
+        } else if keys.pressed(KeyCode::Down) {
             transform.translation.y -= config.grid_size;
             transform.rotation = *Q_DOWN;
             dir.0 = FacingDirection::Down;

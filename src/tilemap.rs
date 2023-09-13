@@ -4,13 +4,14 @@ use std::{fs::File, io::BufReader};
 use bevy::prelude::*;
 
 use crate::player::{spawn_player, Player};
+use crate::state::GameState;
 use crate::{collision::Collider, config::GameConfig};
 
 pub struct TileMapPlugin;
 
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartup, create_level);
+        app.add_systems(OnEnter(GameState::Playing), create_level);
     }
 }
 
