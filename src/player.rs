@@ -27,7 +27,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(MoveTimer {
-            timer: Timer::from_seconds(0.2, TimerMode::Once),
+            timer: Timer::from_seconds(0.1, TimerMode::Once),
         });
     }
 }
@@ -45,6 +45,13 @@ pub fn spawn_player(commands: &mut Commands, asset_server: &mut AssetServer, tra
     ));
 }
 
+lazy_static! {
+    static ref Q_LEFT: Quat = Quat::from_rotation_z(PI / 2.0);
+    static ref Q_RIGHT: Quat = Quat::from_rotation_z(PI * 1.5);
+    static ref Q_UP: Quat = Quat::from_rotation_z(0.0);
+    static ref Q_DOWN: Quat = Quat::from_rotation_z(PI);
+}
+
 pub fn movement_system(
     keys: Res<Input<KeyCode>>,
     mut move_timer: ResMut<MoveTimer>,
@@ -57,24 +64,25 @@ pub fn movement_system(
 
         if keys.pressed(KeyCode::Left) {
             transform.translation.x -= config.grid_size;
-            transform.rotation = Quat::from_rotation_z(PI / 2.0);
+            transform.rotation = *Q_LEFT;
             dir.0 = FacingDirection::Left;
         }
         if keys.pressed(KeyCode::Right) {
             transform.translation.x += config.grid_size;
-            transform.rotation = Quat::from_rotation_z(PI * 1.5);
+            transform.rotation = *Q_RIGHT;
             dir.0 = FacingDirection::Right;
         }
         if keys.pressed(KeyCode::Up) {
             transform.translation.y += config.grid_size;
-            transform.rotation = Quat::from_rotation_z(0.0);
+            transform.rotation = *Q_UP;
             dir.0 = FacingDirection::Up;
         }
         if keys.pressed(KeyCode::Down) {
             transform.translation.y -= config.grid_size;
-            transform.rotation = Quat::from_rotation_z(PI);
+            transform.rotation = *Q_DOWN;
             dir.0 = FacingDirection::Down;
         }
+
         move_timer.timer.reset();
     } else {
         move_timer.timer.tick(time.delta());

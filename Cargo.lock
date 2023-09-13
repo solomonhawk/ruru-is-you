@@ -2983,6 +2983,7 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_pixel_camera",
+ "lazy_static",
 ]
 
 [[package]]
