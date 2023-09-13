@@ -19,3 +19,9 @@ Run `cargo build` to compile [`bevy`](https://bevyengine.org/). The first time y
     cargo build
 
 Run `cargo run` to run the game.
+
+## Releases
+
+Release builds should not use the `fast-compile` feature (which enables `bevy` dynamic linking). To build a release binary, make sure to disable default features:
+
+    cargo build --release --no-default-features
